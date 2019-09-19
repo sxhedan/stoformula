@@ -1,0 +1,1 @@
+"\ndef foo(x, y):\n\n\tx *= -y\n\tx **= 2\n\n\tx+y\n\treturn x + y"

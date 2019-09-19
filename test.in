@@ -1,0 +1,1 @@
+"def foo(x, y):\n\tz = x - 2*--(-y - 1)\n\treturn z+y"
