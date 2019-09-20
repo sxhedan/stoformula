@@ -7,6 +7,7 @@ class Expr:
     def __init__(self, lines = []):
         self.plines = lines
         self.vars = {}
+        self.cond = True
 
     def formula(self):
         if len(self.plines) == 0 or self.plines[0]["type"] != "def":
@@ -17,22 +18,99 @@ class Expr:
             print("Invalid def:")
             print(self.plines[0]["content"])
             return 0
+        self.vars["return"] = {}
         level = self.plines[0]["level"]
         i = 1
         while i < len(self.plines):
             line = self.plines[i]
+            if line["level"] != level + 1:
+                print("Error: incorrect level in formula().")
+                return 0
             if line["type"] == "return":
-                return self.calstring(line["content"][6:]) #TODO
-            if line["type"] == "if":
-                print("if statement to be implemented.")    # TODO
-                pass
+                #self.vars["return"][self.cond] = self.calstring(line["content"][6:])
+                self.vars["return"][self.cond] = eval(line["content"][6:], self.vars)
+            elif line["type"] == "if":
+                ibegin, iend = i, i + 1;
+                while iend < len(self.plines) and \
+                        (self.plines[iend]["level"] != level + 1 or \
+                        len(self.plines[iend]["content"]) > 4 and \
+                        self.plines[iend]["content"][:5] in ["else:", "else ", "elif:", "elif "]):
+                    iend += 1
+                iend -= 1
+                self.parseifstat(ibegin, iend)
+                i = iend
             else:
-                self.parseexpr(line["content"])
+                self.parseexpr1(line["content"])
             i += 1
-        print("Error: can't locate return.")
-        return 0
+        return z3.simplify(self.parsereturn())
 
-    def parseexpr(self, line):
+    def parsereturn(self):
+        if len(self.vars["return"]) == 1:
+            return self.vars["return"].values()[0]
+        elif len(self.vars["return"]) == 2:
+            cond, r = [], []
+            for k in self.vars["return"].keys():
+                cond.append(k)
+                r.append(self.vars["return"][k])
+                self.vars["return"].pop(k)
+            return z3.If(cond[0], r[0], r[1])
+        else:
+            cond = self.vars["return"].keys()[0]
+            r = self.vars["return"].pop(cond)
+            return z3.If(cond, r, self.parsereturn())
+
+    def parseifstat(self, ibegin, iend):
+        cond = self.parsecond(ibegin)
+        iendif = ibegin + 1
+        while iendif <= iend and self.plines[iendif]["level"] > self.plines[ibegin]["level"]:
+            iendif += 1
+        iendif -= 1
+        varsif = self.parsemodule(ibegin+1, iendif, cond)
+        #print(varsif)
+        #print(self.vars)
+        varselse = {}
+        if iendif < iend and self.plines[iendif+1]["content"][:5] in ["else:", "else "]:
+            varselse = self.parsemodule(iendif+2, iend, z3.Not(cond))
+        for v in varsif.keys():
+            if v in varselse.keys():
+                self.vars[v] = z3.If(cond, varsif[v], varselse[v])
+            else:
+                self.vars[v] = z3.If(cond, varsif[v], self.vars[v])
+        for v in varselse.keys():
+            if v not in varsif.keys():
+                self.vars[v] = z3.If(cond, self.vars[v], varselse[v])
+        return
+
+    def parsemodule(self, ibegin, iend, cond):
+        currvars = self.vars
+        i = ibegin
+        while i <= iend:
+            line = self.plines[i]
+            if line["type"] == "return":
+                self.vars["return"][z3.And(self.cond, cond)] = eval(line["content"][6:], self.vars)
+                self.cond = z3.simplify(z3.And(self.cond, z3.Not(cond)))
+                return {}
+            else:
+                self.parseexpr2(line["content"], currvars)
+                #currvars = self.parseexpr(line["content"])
+                i += 1
+        return currvars
+
+    def parsecond(self, i):
+        line = self.plines[i]["content"]
+        if line[:2] == "if":
+            ibegin = 3
+        elif line[:4] == "elif":
+            ibegin = 5
+        else:
+            print("Error: invalid if statement.")
+            return None
+        iend = len(line) - 1
+        while iend >= ibegin and line[iend] != ':':
+            iend -= 1
+        return eval(line[ibegin:iend], self.vars)
+
+    def parseexpr1(self, line):
         if '=' not in line:
             return
         i = 0
@@ -51,8 +129,34 @@ class Expr:
         else:
             ieq = line.find('=', i)
             rhs = v0 + line[i:ieq] + '(' + line[ieq+1:] + ')'
-        self.vars[v0] = self.calstring(rhs)
+        #self.vars[v0] = self.calstring(rhs)
+        self.vars[v0] = eval(rhs, self.vars)
         return
+
+    def parseexpr2(self, line, cvars = {}):
+        if '=' not in line:
+            return
+        i = 0
+        # left hand side
+        # x, y = y, x   FIXME
+        v0, i = self.getvname(line, i)
+        if not v0:
+            return
+        # right hand side
+        while i < len(line) and line[i] == ' ':
+            i += 1
+        if line[i] == '=':
+            if i + 1 == len(line) or line[i+1] == '=':
+                return
+            rhs = line[i+1:]
+        else:
+            ieq = line.find('=', i)
+            rhs = v0 + line[i:ieq] + '(' + line[ieq+1:] + ')'
+        #self.vars[v0] = self.calstring(rhs)
+        #self.vars[v0] = eval(rhs, self.vars)
+        #cvars[v0] = self.calstring(rhs)
+        cvars[v0] = eval(rhs, cvars)
+        return cvars
 
     def calstring(self, s):
         """

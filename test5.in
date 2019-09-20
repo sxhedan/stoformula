@@ -1,0 +1,1 @@
+"def foo(x, y):\n\tz = x\n\tif x > 10:\n\t\tz = x - 10\n\treturn z"

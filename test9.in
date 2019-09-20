@@ -1,0 +1,1 @@
+"def foo(x, y):\n\tif x < 10:\n\t\treturn x\n\telse:\n\t\treturn y"

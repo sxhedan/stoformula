@@ -10,8 +10,7 @@ def main(argv):
     print("Notes:")
     print("1) Only the first line in the input file will be read.")
     print("2) The line should start and end with \'\"\'.")
-    print("3) Operators allowed: **, *, /, //, %, +, -.")
-    print("4) '/' in Python and '/' in Python3 are different fot int.")
+    print("3) '/' in Python and '/' in Python3 are different fot int.")
     print("===============================================================")
     """
     try:
@@ -28,7 +27,6 @@ def main(argv):
     with open(argv[0], 'r') as f:
         print("Reading file %s..." % argv[0])
         instr = f.readline()[:-1]
-    # if not read from a file   TODO
     print("Converting string %s to a formula..." % instr)
     pstr = PString(instr)
     plines = pstr.parsestring()

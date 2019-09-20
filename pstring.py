@@ -2,21 +2,30 @@
 
 class PString:
 
-    def __init__(self, s = ""):
+    def __init__(self, s = "", form = "string"):
         self.pstring = s[1:-1]
         self.plines = []
+        if form == "string":
+            self.tab = "\\t"
+            self.nl = "\\n"
+        else:
+            self.tab = '\t'
+            self.nl = '\n'
 
     def parsestring(self):
-        lines = self.pstring.split("\\n")
+        lines = self.pstring.split(self.nl)
+        funcbegin = False
         for line in lines:
             pline = self.parseline(line)
-            if pline["type"] != "empty" and pline["type"] != "error":
+            if pline["type"] == "def":
+                funcbegin = True
+            if funcbegin and pline["type"] != "empty" and pline["type"] != "error":
                 self.plines.append(pline)
         return self.plines
 
     def parseline(self, line):
         level, i = 0, 0
-        while i + 1 < len(line) and line[i:i+2] == '\\t':
+        while i + 1 < len(line) and line[i:i+2] == self.tab:
             level += 1
             i += 2
         typ = "empty"
