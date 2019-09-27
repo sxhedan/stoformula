@@ -1,9 +1,9 @@
-#!usr/bin/env python
+#!usr/bin/env python3
 
 class PString:
 
     def __init__(self, s = "", form = "string"):
-        self.pstring = s[1:-1]
+        self.pstring = s
         self.plines = []
         if form == "string":
             self.tab = "\\t"
@@ -25,9 +25,11 @@ class PString:
 
     def parseline(self, line):
         level, i = 0, 0
-        while i + 1 < len(line) and line[i:i+2] == self.tab:
+        #while i + 1 < len(line) and line[i:i+2] == self.tab:
+        while i + 1 < len(line) and line[i] == self.tab:
             level += 1
-            i += 2
+            #i += 2
+            i += 1
         typ = "empty"
         if i < len(line) and line[i] == ' ':
             print("Error: detected a space for indentation.")

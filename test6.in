@@ -1,1 +1,7 @@
-"def foo(x, y):\n\tif x < 10:\n\t\treturn x\n\tx -= 10\n\tif x < 10:\n\t\treturn x\n\treturn x - 10"
+def foo(x, y):
+	if x < 10:
+		return x
+	x -= 10
+	if x < 10:
+		return x
+	return x - 10

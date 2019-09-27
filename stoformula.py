@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import z3
@@ -26,9 +26,9 @@ def main(argv):
     """
     with open(argv[0], 'r') as f:
         print("Reading file %s..." % argv[0])
-        instr = f.readline()[:-1]
+        instr = f.read()
     print("Converting string %s to a formula..." % instr)
-    pstr = PString(instr)
+    pstr = PString(instr, "file")
     plines = pstr.parsestring()
     expr = Expr(plines)
     formula = expr.formula()

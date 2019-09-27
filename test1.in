@@ -1,1 +1,2 @@
-"def foo(x, y):\n\treturn x * 2"
+def foo(x, y):
+	return x * 2

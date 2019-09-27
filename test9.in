@@ -1,1 +1,5 @@
-"def foo(x, y):\n\tif x < 10:\n\t\treturn x\n\telse:\n\t\treturn y"
+def foo(x, y):
+	if x < 10:
+		return x
+	else:
+		return y

@@ -1,1 +1,5 @@
-"def foo(x, y):\n\tz = x - y\n\tx -= y\n\tz *= x\n\treturn z + 1"
+def foo(x, y):
+	z = x - y
+	x -= y
+	z *= x
+	return z + 1

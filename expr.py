@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import z3
 
@@ -46,16 +46,17 @@ class Expr:
 
     def parsereturn(self):
         if len(self.vars["return"]) == 1:
-            return self.vars["return"].values()[0]
+            return list(self.vars["return"].values())[0]
         elif len(self.vars["return"]) == 2:
             cond, r = [], []
-            for k in self.vars["return"].keys():
+            #for k in self.vars["return"].keys():
+            for k in self.vars["return"].copy().keys():
                 cond.append(k)
                 r.append(self.vars["return"][k])
                 self.vars["return"].pop(k)
             return z3.If(cond[0], r[0], r[1])
         else:
-            cond = self.vars["return"].keys()[0]
+            cond = list(self.vars["return"].keys())[0]
             r = self.vars["return"].pop(cond)
             return z3.If(cond, r, self.parsereturn())
 

@@ -1,1 +1,4 @@
-"def foo(x, y):\n\tif x > y:\n\t\treturn x\n\treturn y"
+def foo(x, y):
+	if x > y:
+		return x
+	return y
